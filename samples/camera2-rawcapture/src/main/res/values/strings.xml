@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rawcapture_app_title">Unprocess RAW</string>
+    <string name="rawcapture_folder">RAW directo · DCIM/Unprocess</string>
+    <string name="rawcapture_saving_dng">Guardando DNG…</string>
+    <string name="rawcapture_saving_jpeg">Revelando JPEG desde RAW…</string>
+    <string name="rawcapture_open_last">Abrir la última captura</string>
+    <string name="rawcapture_toggle_grid">Mostrar u ocultar cuadrícula</string>
+    <string name="rawcapture_flash_enable">Activar flash para la captura</string>
+    <string name="rawcapture_flash_disable">Desactivar flash para la captura</string>
+    <string name="rawcapture_switch_to_front">Cambiar a la cámara frontal</string>
+    <string name="rawcapture_switch_to_back">Cambiar a las cámaras traseras</string>
+    <string name="rawcapture_dng_crop_unavailable">Esta lente conserva el DNG completo; el recorte exacto se aplica al JPEG desde RAW.</string>
+
+    <string name="rawcapture_permission_rationale">Unprocess necesita acceso a la cámara para capturar los datos RAW del sensor.</string>
+    <string name="rawcapture_permission_denied">El acceso a la cámara está bloqueado. Actívalo en los ajustes de la aplicación para poder tomar fotografías.</string>
+    <string name="rawcapture_grant_permission">Permitir acceso</string>
+    <string name="rawcapture_open_settings">Abrir ajustes</string>
+    <string name="rawcapture_unsupported">No se ha encontrado una cámara compatible que exponga RAW_SENSOR mediante Camera2.</string>
+
+    <string name="rawcapture_back">Volver</string>
+    <string name="rawcapture_title">DNG / JPEG desde RAW</string>
+    <string name="rawcapture_back_to_camera">Volver a la cámara</string>
+    <string name="rawcapture_editor_title">Último DNG</string>
+    <string name="rawcapture_jpeg_viewer_title">Último JPEG desde RAW</string>
+    <string name="rawcapture_captured_description">Fotografía capturada</string>
+    <string name="rawcapture_decode_failed">Android no ha podido generar una previsualización del DNG, pero el archivo sigue guardado en DCIM/Unprocess.</string>
+    <string name="rawcapture_jpeg_decode_failed">Android no ha podido abrir la previsualización del JPEG, pero el archivo sigue guardado en DCIM/Unprocess.</string>
+</resources>
