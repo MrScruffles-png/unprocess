@@ -27,8 +27,8 @@ android {
         applicationId = "com.unprocess.pixel"
         minSdk = 30
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.1.0"
 
         // Keep only the locales useful for this build instead of packaging every library translation.
         resourceConfigurations += listOf("en", "es")

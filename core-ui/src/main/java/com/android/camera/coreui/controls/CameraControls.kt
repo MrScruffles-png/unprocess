@@ -47,8 +47,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * The standard shutter button: a 70dp white ring around a 56dp white core. The core scales down
- * briefly while pressed before firing [onClick], matching the console viewfinder.
+ * Compact-camera shutter: a restrained 66dp ring around a 52dp core. The core gives a short,
+ * firm press response before firing [onClick].
  */
 @Composable
 fun ShutterButton(
@@ -59,7 +59,7 @@ fun ShutterButton(
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
     val coreScale by animateFloatAsState(
-        targetValue = if (pressed) 0.78f else 1f,
+        targetValue = if (pressed) 0.82f else 1f,
         animationSpec =
             spring(
                 dampingRatio = Spring.DampingRatioMediumBouncy,
@@ -70,9 +70,9 @@ fun ShutterButton(
     Box(
         modifier =
             modifier
-                .size(70.dp)
+                .size(66.dp)
                 .border(
-                    width = 3.dp,
+                    width = 2.dp,
                     color = MaterialTheme.colorScheme.onSurface,
                     shape = CircleShape,
                 )
@@ -87,7 +87,7 @@ fun ShutterButton(
         Box(
             modifier =
                 Modifier
-                    .size(56.dp)
+                    .size(52.dp)
                     .graphicsLayer {
                         scaleX = coreScale
                         scaleY = coreScale

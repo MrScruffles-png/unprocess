@@ -109,6 +109,7 @@ import com.android.camera.coreui.scaffold.CameraSampleScaffold
 import com.android.camera.coreui.state.LoadingView
 import com.android.camera.coreui.state.UnsupportedView
 import java.util.Locale
+import kotlinx.coroutines.delay
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -226,6 +227,7 @@ private fun BoxScope.PreviewingContent(
     var showDiagnostics by rememberSaveable { mutableStateOf(false) }
     var meteringInfo by remember { mutableStateOf<RawMeteringInfo?>(null) }
     var liveDigitalZoom by remember { mutableFloatStateOf(state.digitalZoom) }
+    var shutterBlackout by remember { mutableStateOf(false) }
 
     val controller =
         rememberCamera2RawCaptureController(
@@ -365,6 +367,13 @@ private fun BoxScope.PreviewingContent(
             onFlashSelected(false)
         }
     }
+    LaunchedEffect(state.isSaving) {
+        if (state.isSaving) {
+            shutterBlackout = true
+            delay(80)
+            shutterBlackout = false
+        }
+    }
 
     // Keep the complete RAW frame visible and keep the same control layout in every orientation.
     // Only the preview aspect follows display rotation so a landscape capture is framed correctly.
@@ -374,7 +383,7 @@ private fun BoxScope.PreviewingContent(
         modifier =
             Modifier
                 .fillMaxSize()
-                .padding(top = 18.dp),
+                .padding(top = 12.dp),
         contentAlignment = Alignment.TopCenter,
     ) {
         val streamWidth = cameraInfo?.previewWidth ?: 1440
@@ -427,6 +436,19 @@ private fun BoxScope.PreviewingContent(
 
             if (showGrid) RuleOfThirdsGrid()
             FocusIndicator(tapOffset = focusTap)
+
+            AnimatedVisibility(
+                visible = shutterBlackout,
+                enter = fadeIn(animationSpec = tween(15)),
+                exit = fadeOut(animationSpec = tween(70)),
+            ) {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.82f)),
+                )
+            }
         }
     }
 
@@ -444,7 +466,7 @@ private fun BoxScope.PreviewingContent(
             (state.exposureMode == ExposureMode.MANUAL &&
                 cameraInfo?.manualExposureAvailable == true && manualControlsExpanded)
 
-    val controlShelfShape = RoundedCornerShape(32.dp)
+    val controlShelfShape = RoundedCornerShape(24.dp)
     Column(
         modifier =
             Modifier
@@ -452,7 +474,7 @@ private fun BoxScope.PreviewingContent(
                 .widthIn(max = 760.dp)
                 .fillMaxWidth()
                 .navigationBarsPadding()
-                .padding(start = 10.dp, end = 10.dp, bottom = 8.dp),
+                .padding(start = 8.dp, end = 8.dp, bottom = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         AnimatedVisibility(
@@ -499,17 +521,22 @@ private fun BoxScope.PreviewingContent(
             )
         }
 
-        if (showExposureTools) Spacer(modifier = Modifier.height(9.dp))
+        if (showExposureTools) Spacer(modifier = Modifier.height(7.dp))
 
         Column(
             modifier =
                 Modifier
                     .fillMaxWidth()
                     .clip(controlShelfShape)
-                    .background(MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.94f))
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                    .background(MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.90f))
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.18f),
+                        shape = controlShelfShape,
+                    )
+                    .padding(horizontal = 10.dp, vertical = 7.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(5.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             AnimatedVisibility(
                 visible =
@@ -532,7 +559,7 @@ private fun BoxScope.PreviewingContent(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(7.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 FormatSelector(
@@ -573,7 +600,7 @@ private fun BoxScope.PreviewingContent(
             }
 
             Row(
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 FlashButton(
@@ -650,7 +677,7 @@ private fun BoxScope.PreviewingContent(
         modifier =
             Modifier
                 .align(Alignment.CenterStart)
-                .padding(start = 10.dp, bottom = 190.dp),
+                .padding(start = 10.dp, bottom = 178.dp),
     ) {
         DiagnosticsOverlay(
             cameraInfo = cameraInfo,
@@ -686,7 +713,7 @@ private fun BoxScope.PreviewingContent(
                         CaptureFormat.DNG_JPEG -> "Guardando DNG + JPEG…"
                     },
                 color = MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.labelLarge,
+                style = MaterialTheme.typography.labelMedium,
             )
         }
     }
@@ -697,7 +724,7 @@ private fun BoxScope.PreviewingContent(
             Modifier
                 .align(Alignment.BottomCenter)
                 .navigationBarsPadding()
-                .padding(bottom = 196.dp, start = 16.dp, end = 16.dp),
+                .padding(bottom = 184.dp, start = 16.dp, end = 16.dp),
     )
 }
 
@@ -725,20 +752,20 @@ private fun BoxScope.CaptureTopBar(
         color =
             if (diagnosticsSelected) MaterialTheme.colorScheme.onSecondaryContainer
             else MaterialTheme.colorScheme.onSurfaceVariant,
-        style = MaterialTheme.typography.labelMedium,
+        style = MaterialTheme.typography.labelSmall,
         fontWeight = FontWeight.SemiBold,
         modifier =
             Modifier
                 .align(Alignment.TopEnd)
                 .statusBarsPadding()
-                .padding(top = 26.dp, end = 14.dp)
-                .clip(MaterialTheme.shapes.extraLarge)
+                .padding(top = 20.dp, end = 12.dp)
+                .clip(MaterialTheme.shapes.large)
                 .background(
-                    if (diagnosticsSelected) MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.94f)
-                    else MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.78f),
+                    if (diagnosticsSelected) MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.88f)
+                    else MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.66f),
                 )
                 .clickable(onClick = onToggleDiagnostics)
-                .padding(horizontal = 11.dp, vertical = 6.dp),
+                .padding(horizontal = 9.dp, vertical = 5.dp),
     )
 }
 
@@ -760,8 +787,8 @@ private fun ExposureModeSelector(
             modifier
                 .fillMaxWidth()
                 .clip(MaterialTheme.shapes.extraLarge)
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                .padding(4.dp),
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f))
+                .padding(3.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         ExposureMode.entries.forEach { exposureMode ->
@@ -805,7 +832,7 @@ private fun ExposureModeSelector(
                                 else -> onModeSelected(exposureMode)
                             }
                         }
-                        .padding(horizontal = 6.dp, vertical = 9.dp),
+                        .padding(horizontal = 5.dp, vertical = 8.dp),
             )
         }
     }
@@ -855,7 +882,7 @@ private fun ExposureAdjustmentPanel(
                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.08f),
                     shape = MaterialTheme.shapes.large,
                 )
-                .padding(horizontal = 12.dp, vertical = 7.dp),
+                .padding(horizontal = 11.dp, vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         if (showAutoAdjustment) {
@@ -1109,7 +1136,7 @@ private fun MinimalSnappySlider(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .height(30.dp)
+                .height(28.dp)
                 .pointerInput(itemCount, enabled) {
                     if (!enabled || itemCount <= 1) return@pointerInput
                     awaitEachGesture {
@@ -1142,7 +1169,7 @@ private fun MinimalSnappySlider(
             else selectedIndex.coerceIn(0, itemCount - 1).toFloat() / (itemCount - 1)
         val thumbX = startX + (endX - startX) * fraction
         val y = this.size.height / 2f
-        val trackWidth = 4.dp.toPx()
+        val trackWidth = 3.dp.toPx()
 
         drawLine(
             color = inactiveColor,
@@ -1162,7 +1189,7 @@ private fun MinimalSnappySlider(
         }
         drawCircle(
             color = thumbColor,
-            radius = 7.dp.toPx(),
+            radius = 6.dp.toPx(),
             center = Offset(thumbX, y),
         )
     }
@@ -1309,9 +1336,9 @@ private fun FormatSelector(
             modifier
                 .fillMaxWidth()
                 .clip(MaterialTheme.shapes.extraLarge)
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                .padding(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f))
+                .padding(3.dp),
+        horizontalArrangement = Arrangement.spacedBy(3.dp),
     ) {
         CaptureFormat.entries.forEach { format ->
             val selected = selectedFormat == format
@@ -1340,7 +1367,7 @@ private fun FormatSelector(
                             else Color.Transparent,
                         )
                         .clickable(enabled = enabled && !selected) { onFormatSelected(format) }
-                        .padding(horizontal = 5.dp, vertical = 9.dp),
+                        .padding(horizontal = 4.dp, vertical = 8.dp),
             )
         }
     }
@@ -1360,14 +1387,14 @@ private fun LensSelector(
         modifier =
             Modifier
                 .clip(MaterialTheme.shapes.extraLarge)
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                .padding(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(3.dp),
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.86f))
+                .padding(3.dp),
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         presets.forEach { ratio ->
             val selected = abs(selectedZoom - ratio) < 0.05f
             val buttonScale by animateFloatAsState(
-                targetValue = if (selected) 1.025f else 1f,
+                targetValue = if (selected) 1.015f else 1f,
                 animationSpec =
                     spring(
                         dampingRatio = Spring.DampingRatioMediumBouncy,
@@ -1376,12 +1403,12 @@ private fun LensSelector(
                 label = "lensScale",
             )
             val horizontalPadding by animateDpAsState(
-                targetValue = if (selected) 13.dp else 12.dp,
+                targetValue = if (selected) 11.dp else 10.dp,
                 animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy),
                 label = "lensPadding",
             )
             val verticalPadding by animateDpAsState(
-                targetValue = 8.dp,
+                targetValue = 7.dp,
                 animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy),
                 label = "lensVerticalPadding",
             )
@@ -1405,7 +1432,7 @@ private fun LensSelector(
                 color = contentColor,
                 textAlign = TextAlign.Center,
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
-                style = MaterialTheme.typography.labelLarge,
+                style = MaterialTheme.typography.labelMedium,
                 modifier =
                     Modifier
                         .graphicsLayer {
@@ -1430,8 +1457,8 @@ private fun LastCaptureButton(
     Box(
         modifier =
             modifier
-                .layoutSize(50.dp)
-                .clip(MaterialTheme.shapes.extraLarge)
+                .layoutSize(46.dp)
+                .clip(MaterialTheme.shapes.large)
                 .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                 .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
@@ -1441,7 +1468,7 @@ private fun LastCaptureButton(
             contentDescription = stringResource(R.string.rawcapture_open_last),
             tint =
                 MaterialTheme.colorScheme.onSurface.copy(alpha = if (enabled) 1f else 0.34f),
-            modifier = Modifier.layoutSize(22.dp),
+            modifier = Modifier.layoutSize(20.dp),
         )
     }
 }
@@ -1465,7 +1492,7 @@ private fun FlashButton(
     Box(
         modifier =
             modifier
-                .layoutSize(48.dp)
+                .layoutSize(44.dp)
                 .clip(if (flashOn) MaterialTheme.shapes.large else CircleShape)
                 .background(container)
                 .clickable(enabled = enabled, onClick = onClick),
@@ -1479,7 +1506,7 @@ private fun FlashButton(
                     else R.string.rawcapture_flash_enable,
                 ),
             tint = content,
-            modifier = Modifier.layoutSize(23.dp),
+            modifier = Modifier.layoutSize(21.dp),
         )
     }
 }
@@ -1494,8 +1521,8 @@ private fun CameraFacingButton(
     Box(
         modifier =
             modifier
-                .layoutSize(46.dp)
-                .clip(MaterialTheme.shapes.extraLarge)
+                .layoutSize(44.dp)
+                .clip(MaterialTheme.shapes.large)
                 .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                 .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
@@ -1509,7 +1536,7 @@ private fun CameraFacingButton(
                 ),
             tint =
                 MaterialTheme.colorScheme.onSurface.copy(alpha = if (enabled) 1f else 0.30f),
-            modifier = Modifier.layoutSize(22.dp),
+            modifier = Modifier.layoutSize(21.dp),
         )
     }
 }
@@ -1628,7 +1655,7 @@ private fun GridButton(
     Box(
         modifier =
             modifier
-                .layoutSize(48.dp)
+                .layoutSize(44.dp)
                 .clip(if (enabled) MaterialTheme.shapes.large else CircleShape)
                 .background(
                     if (enabled) MaterialTheme.colorScheme.secondaryContainer
@@ -1643,7 +1670,7 @@ private fun GridButton(
             tint =
                 if (enabled) MaterialTheme.colorScheme.onSecondaryContainer
                 else MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.layoutSize(23.dp),
+            modifier = Modifier.layoutSize(21.dp),
         )
     }
 }
